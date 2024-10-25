@@ -121,3 +121,76 @@ for token in txt4:
 ```
 Simular a busca de similaridade entre termos
 
+# Aula 02 - Chatbots: Árvore de decisão, integração e interação do chatbot com o Telegram, em Python
+
+[Aula 02](https://www.youtube.com/watch?v=KZCMFAc3UAM)
+
+#### Ávore de decisão: processo decisório baseado na iteração do chatbot com o interlocutor (usuário)
+- A árvore de decisão será sempre projetada antes da criação do chatbot
+- Árvore de decisões tem que ser simples de fazer
+
+#### Criar o bot no telegram com o [BotFather](https://t.me/BotFather)
+
+#### Instalar bibliotecas para a integração com o Telegram
+```sh
+pip install pyTelegramBotAPI
+pip install --upgrade pyTelegramBotAPI
+pip install telebot
+pip install python-decouple
+```
+Preparando a codificação
+
+```python
+import telebot
+from decouple import config
+```
+
+Criação do arquivo .env
+
+```txt
+TELEGRAM_TOKEN=7854032110:AAFnxjZuJnSIGyiasnzgqNMX_dAUX4cfas8
+```
+Carregar a configuração
+```python
+import telebot
+from decouple import config
+
+TELEGRAM_TOKEN = config("TELEGRAM_TOKEN")
+
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+```
+
+Criar a função da primeira parte do fluxo decisório
+```python
+import telebot
+from decouple import config
+
+TELEGRAM_TOKEN = config("TELEGRAM_TOKEN")
+
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+@bot.message_handler(commands=['start', 'inicio'])
+def start(message):
+    bot.send_message(message.chat.id, "Fala coisa linda, tudo bem contigo?")
+
+bot.polling() # sondagem, para ver se tem mensagens novas
+```
+Recuperando a mensagem de resposta do usuário
+```python
+import telebot
+from decouple import config
+
+TELEGRAM_TOKEN = config("TELEGRAM_TOKEN")
+
+bot = telebot.TeleBot(TELEGRAM_TOKEN)
+
+@bot.message_handler(commands=['start', 'inicio'])
+def start(message):
+    bot.send_message(message.chat.id, "Fala coisa linda, tudo bem contigo?")
+
+@bot.message_handler(regexp=r'tudo|td|paz')
+def start(message):
+    bot.send_message(message.chat.id, "Bora fazer o download do arquivo? Digite bora para receber o arquivo")
+
+bot.polling() # sondagem, para ver se tem mensagens novas
+```
