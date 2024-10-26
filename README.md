@@ -14,6 +14,7 @@
 [Aula 01](https://www.youtube.com/watch?v=Gjgv42Z5z_4&t=2572s)
 
 Biblioteca [Spacy](https://spacy.io/usage)
+
 ```sh
 pip install -U pip setuptools wheel
 pip install -U spacy
@@ -148,7 +149,7 @@ from decouple import config
 Criação do arquivo .env
 
 ```txt
-TELEGRAM_TOKEN=7854032110:AAFnxjZuJnSIGyiasnzgqNMX_dAUX4cfas8
+TELEGRAM_TOKEN=<TELEGRAM_TOKEN>
 ```
 Carregar a configuração
 ```python
@@ -193,4 +194,97 @@ def start(message):
     bot.send_message(message.chat.id, "Bora fazer o download do arquivo? Digite bora para receber o arquivo")
 
 bot.polling() # sondagem, para ver se tem mensagens novas
+```
+#### Árvore de decisão do bot
+![Chatbot Decision Tree](https://github.com/thalisonwilker/python-chatbot/blob/main/arvore-decisao-bot-telegram.png?raw=true)
+
+A árvore de decisão irá consistir em guiar o usuário para digitar o que precisamos, depois de projetar o fluxo o bot já pode as etapas necessárias podem ser codificadas
+
+#### Etapas
+- Iniciar o bot
+- Mensagem de saudação e pergunta se quer baixar o PDF
+- Se sim, enviar o arquivo e envia mensagem de encerramento
+- Se não, tenta convencer a baixar o livro, e pergunta novamente se quer baixar o PDF
+- Se sim, enviar o arquivo e envia mensagem de encerramento
+- Se não, envia o link do YouTube e depois a mensagem de encerramento
+
+#### Codificação das etapas
+##### Iniciar o bot
+Para iniciar o bot, é importante criar uma `message_handler` para tratar o comando _/start_
+
+```python
+# Inicia a conversa com o bot
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, "Fala coisa linda, tudo bem contigo?", timeout=120)
+```
+Agora é necessário tratar a resposta do usuário, o método que pode ser utilizado para buscar os textos que queremos também é o `message_handler`, mas ao invés de usar o parâmetro _commands=['start']_ é bem mais interesante utilizar o parâmetro _regexp=r''_
+##### Saudação e pergunta se quer baixar o PDF
+```python
+# Faz a saudação e pergunta se quer fazer o download do arquivo
+@bot.message_handler(regexp=r'tu?do?|paz|tu?do? bem') # aqui eu fiz um pouco diferente do que o prefessor mostrou, mas funciona igal
+def saudacao_pergunta(message):
+    bot.send_message(message.chat.id, "Bora fazer o download do arquivo? Digite bora para receber o arquivo")
+```
+##### Se sim, enviar o arquivo e envia mensagem de encerramento
+```python
+# Download do arquivo
+@bot.message_handler(regexp=r'boo?ra|sim|vamos|quero|baixar|download') # Aqui eu também fiz um pouco diferente do que o professor mostrou, para testar outras situações de input
+def download_do_pdf(message):
+    bot.send_message(message.chat.id, "Show! Partiu Download!")
+    pdf = open('./2.pdf', 'rb')
+    bot.send_chat_action(message.chat.id, 'upload_document')
+    time.sleep(4)
+    bot.send_document(message.chat.id, pdf, caption="Aqui está o arquivo que você pediu! Espero que você possa aproveitar porque esse conteúdo tá muit bom em 😎😎")
+    pdf.close()
+    # Mensagem de encerramento
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(3)
+    bot.send_message(message.chat.id, "Muito obrigado pelo download! qualquer coisa so digitar iniciar que eu tô por aqui!")
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(2)
+    bot.send_message(message.chat.id, "Tmj e bora codar! 👨‍💻👨‍💻")
+```
+##### Se não, tenta convencer a baixar o livro, e pergunta novamente se quer baixar o PDF
+```python
+# Mensagem de convencimento
+@bot.message_handler(regexp=r'depois|não|nada|não|agora não|não agora|não quero|não quero agora|não,?.?obrigado') # Sempre faço essa parte diferente do que o professor mostrou haha, mas funciona igualmente!
+def convencimento(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(2)
+    bot.send_message(message.chat.id, "É sério mesmo ??")
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(6)
+    bot.send_message(message.chat.id, "Mais eu vou te dar mais uma chance pra tu aprender os fundamentos de Python de graça!")
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(4)
+    bot.send_message(message.chat.id, "Tu já sabe que é só digitar bora que eu te mando o arquivo né?")
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(2)
+    bot.send_message(message.chat.id, "Caso contrário digita tchau, vou ficar triste mas tudo bem, fazer o que né ☹️☹️")
+```
+Se o usuário digitar bora, ele retorna para o fluxo anterior, se ele digitar tchau, ou algum termo da regex o bot entra no fluxo final
+```python
+# Finaliza a conversa
+@bot.message_handler(regexp=r'tchau|adeus|bye|sair|até mais|vlw|flw|fui|valeu')
+def tchau(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(2)
+    bot.send_message(message.chat.id, "teimosão hein! 😂😂")
+    time.sleep(1)
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(2)
+    bot.send_message(message.chat.id, "Brincadeiras a parte")
+    time.sleep(1)
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(4)
+    bot.send_message(message.chat.id, "Mas se você quiser aprender ou reforçar seus conhecimentos sobre fundamentos de Python de graça")
+    time.sleep(1)
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(4)
+    bot.send_message(message.chat.id, "Tu já sabe que é só digitar bora que eu te mando o arquivo né?")
+    time.sleep(2)
+    bot.send_chat_action(message.chat.id, 'typing')
+    time.sleep(1)
+    bot.send_message(message.chat.id, "Tmj e bora codar! 👨‍💻👨‍💻")
 ```
