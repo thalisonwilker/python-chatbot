@@ -1,3 +1,5 @@
+import datetime
+import csv
 import telebot
 from decouple import config
 import time
@@ -6,25 +8,34 @@ TELEGRAM_TOKEN = config("TELEGRAM_TOKEN")
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
-# Inicia a conversa com o bot
+# Salvar dados da conversa com o chatbot em arquivos CSV
+def salvar(arquivo, conversa: list):
+    with open(arquivo, 'a') as f:
+        e = csv.writer(f)
+        e.writerow(conversa)
+
+# Inicia o bot
 @bot.message_handler(commands=['start'])
 def start(message):
     bot.send_message(message.chat.id, "Fala coisa linda, tudo bem contigo?", timeout=120, )
-
-@bot.message_handler(regexp=r'ini?ciar|oi?i?|olá|ola|começar|start')
+# Inicia a conversa
+@bot.message_handler(regexp=r'ini?ciar')
 def start(message):
+    salvar('iniciar.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
     bot.send_message(message.chat.id, "Fala coisa linda, tudo bem contigo?", timeout=120, )
 
 
 # Faz a saudação e pergunta se quer fazer o download do arquivo
 @bot.message_handler(regexp=r'tu?do?|paz|tu?do? bem')
 def saudacao_pergunta(message):
+    salvar('saudacao.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
     bot.send_message(message.chat.id, "Bora fazer o download do arquivo? Digite bora para receber o arquivo")
 
 
 # Download do arquivo
-@bot.message_handler(regexp=r'boo?ra|sim|vamos|quero|baixar|download')
+@bot.message_handler(regexp=r'bora')
 def download_do_pdf(message):
+    salvar('baixou.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
     bot.send_message(message.chat.id, "Show! Partiu Download!")
     pdf = open('./2.pdf', 'rb')
     bot.send_chat_action(message.chat.id, 'upload_document')
@@ -42,6 +53,7 @@ def download_do_pdf(message):
 # Mensagem de convencimento
 @bot.message_handler(regexp=r'depois|não|nada|não|agora não|não agora|não quero|não quero agora|não,?.?obrigado')
 def convencimento(message):
+    salvar('naobaixou.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
     bot.send_chat_action(message.chat.id, 'typing')
     time.sleep(2)
     bot.send_message(message.chat.id, "É sério mesmo ??")
@@ -58,6 +70,7 @@ def convencimento(message):
 # Finaliza a conversa
 @bot.message_handler(regexp=r'tchau|adeus|bye|sair|até mais|vlw|flw|fui|valeu')
 def tchau(message):
+    salvar('tchau.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
     bot.send_chat_action(message.chat.id, 'typing')
     time.sleep(2)
     bot.send_message(message.chat.id, "teimosão hein! 😂😂")

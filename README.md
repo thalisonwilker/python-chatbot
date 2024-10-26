@@ -288,3 +288,61 @@ def tchau(message):
     time.sleep(1)
     bot.send_message(message.chat.id, "Tmj e bora codar! 👨‍💻👨‍💻")
 ```
+
+# Aula 03 - Desenvolvendo algoritmo para salvar dados da conversa com o chatbot do Telegram
+[Aula 03](https://www.youtube.com/watch?v=zqUfVqDkf9o)
+
+Criação da função para salvar as conversa em CSV
+Importar a biblioteca
+```python
+import csv
+```
+
+Codificar a função para salvar os dados da conversa
+```python
+# Salvar dados da conversa com o chatbot em arquivos CSV
+def salvar(arquivo, conversa: list):
+    with open(arquivo, 'a') as f:
+        e = csv.writer(f)
+        e.writerow(conversa)
+```
+Após isso, basta chamar a função dentro do handler
+
+```python
+# Inicia a conversa
+@bot.message_handler(regexp=r'ini?ciar')
+def start(message):
+    salvar('iniciar.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
+    ...
+```
+
+```python
+# Faz a saudação e pergunta se quer fazer o download do arquivo
+@bot.message_handler(regexp=r'tu?do?|paz|tu?do? bem')
+def saudacao_pergunta(message):
+    salvar('saudacao.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
+    ...
+```
+```python
+# Download do arquivo
+@bot.message_handler(regexp=r'bora')
+def download_do_pdf(message):
+    salvar('baixou.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
+    ...
+```
+```python
+# Mensagem de convencimento
+@bot.message_handler(regexp=r'depois|não|nada|não|agora não|não agora|não quero|não quero agora|não,?.?obrigado')
+def convencimento(message):
+    salvar('naobaixou.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
+    ...
+```
+```python
+# Finaliza a conversa
+@bot.message_handler(regexp=r'tchau|adeus|bye|sair|até mais|vlw|flw|fui|valeu')
+def tchau(message):
+    salvar('tchau.csv', [message.chat.id, message.from_user.username, message.text, datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
+    ...
+```
+
+Com os arquivos gerados, é possível consultar depois para melhorar o bot e torna-lo mais humanizado e mais esperto
